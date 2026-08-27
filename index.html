@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="T2 Luzern"/>
+<meta name="theme-color" content="#060609"/>
+<title>T2 Luzern</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&family=Bebas+Neue&display=swap');
+
+:root{
+  --ink:#060609; --ink2:#0d0d16; --ink3:#141420; --ink4:#1a1a2e;
+  --rim:#222238; --rim2:#2c2c4a;
+  --txt:#dcdcf0; --dim:#545470; --dim2:#333355;
+  --go:#00f5a0; --god:rgba(0,245,160,.10); --gob:rgba(0,245,160,.24);
+  --sun:#ffbc00; --sund:rgba(255,188,0,.11); --sunb:rgba(255,188,0,.28);
+  --hot:#ff3d6b; --hotd:rgba(255,61,107,.11); --hotb:rgba(255,61,107,.28);
+  --sky:#3d9bff; --skyd:rgba(61,155,255,.11);
+  --r:13px; --rL:17px;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--ink);color:var(--txt);font-family:'Azeret Mono',monospace;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+button{border:none;cursor:pointer;font-family:inherit}
+input,textarea{font-family:inherit;color:var(--txt)}
+#app{height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+
+/* HEADER */
+.hdr{padding:calc(var(--st)+10px) 14px 10px;background:var(--ink);border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px}
+.logo em{color:var(--go);font-style:normal}
+.pills{display:flex;gap:6px}
+.pill{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;border:1px solid}
+.pgo{background:var(--god);color:var(--go);border-color:var(--gob)}
+.psun{background:var(--sund);color:var(--sun);border-color:var(--sunb)}
+
+/* TABS */
+.tabs{display:flex;padding:8px 10px;gap:5px;background:var(--ink);border-bottom:1px solid var(--rim)}
+.tab{flex:1;height:36px;border-radius:9px;border:1px solid var(--rim2);background:var(--ink2);color:var(--dim);font-family:'Azeret Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.5px;transition:all .14s;text-transform:uppercase}
+.tab.on{background:var(--god);border-color:var(--gob);color:var(--go)}
+
+/* SCREENS */
+.sc{display:none;flex:1;overflow-y:auto;padding:14px 12px;padding-bottom:calc(var(--sb)+24px)}
+.sc.on{display:block}
+
+/* TYPOGRAPHY */
+.lbl{font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin:16px 0 8px}
+.lbl:first-child{margin-top:0}
+.empty{text-align:center;color:var(--dim);padding:48px 20px;font-size:12px;line-height:2}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:52px;padding:0 20px;border-radius:var(--r);font-family:'Azeret Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.3px;transition:all .11s;white-space:nowrap}
+.btn:active{transform:scale(.92)}
+.bgo{background:var(--go);color:#000}
+.bsur{background:var(--ink3);color:var(--txt);border:1px solid var(--rim2)}
+.bsun{background:var(--sund);color:var(--sun);border:1px solid var(--sunb)}
+.bhot{background:var(--hotd);color:var(--hot);border:1px solid var(--hotb)}
+.bsky{background:var(--skyd);color:var(--sky);border:1px solid rgba(61,155,255,.28)}
+.bw{width:100%}
+.brow{display:flex;gap:8px;margin-bottom:8px}
+
+/* PARSE */
+.paste{width:100%;min-height:150px;background:var(--ink2);border:1px solid var(--rim2);border-radius:var(--rL);color:var(--txt);font-size:13px;padding:16px;outline:none;resize:none;line-height:1.75;transition:border-color .2s}
+.paste:focus{border-color:var(--gob)}
+.paste::placeholder{color:var(--dim2)}
+.pr-box{background:var(--god);border:1px solid var(--gob);border-radius:var(--r);padding:14px 16px;margin-top:12px;display:none}
+.pr-box.show{display:block}
+.pr-ttl{font-size:9px;color:var(--go);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:8px}
+.pr-tags{display:flex;flex-wrap:wrap;gap:6px}
+.pr-tag{background:var(--go);color:#000;border-radius:8px;padding:4px 11px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px}
+
+/* Manual */
+.add-row{display:flex;gap:8px;margin-top:10px}
+.ni{width:78px;height:52px;background:var(--ink2);border:1px solid var(--rim2);border-radius:var(--r);color:var(--txt);font-size:20px;text-align:center;outline:none;transition:border-color .2s}
+.ni:focus{border-color:var(--gob)}
+
+/* STOP GRID */
+.sgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:10px}
+.sg{aspect-ratio:1;border-radius:9px;border:1px solid var(--rim2);background:var(--ink2);color:var(--dim);font-family:'Azeret Mono',monospace;font-size:11px;font-weight:700;transition:all .11s;display:flex;align-items:center;justify-content:center}
+.sg:active{transform:scale(.84)}
+.sg.on{background:var(--god);border-color:var(--go);color:var(--go)}
+
+/* ROUTE */
+.rcards{display:flex;flex-direction:column;gap:9px}
+.rcard{background:var(--ink2);border:1px solid var(--rim);border-radius:var(--rL);overflow:hidden}
+.rcard.cur{border-color:var(--go)}
+.rcard.kpcard{border-color:var(--hot)}
+.rcard.gpcard{border-color:var(--sun)}
+.rcard.donecard{opacity:.35}
+.rcard.donecard .ep,.rcard.donecard .rc-gps-num,.rcard.donecard .rc-inf,.rcard.donecard .sb{pointer-events:none}
+
+.rc-top{display:flex;align-items:stretch}
+.rc-n{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--go);width:56px;display:flex;align-items:center;justify-content:center;background:var(--god);flex-shrink:0;line-height:1}
+.rcard.kpcard .rc-n{background:var(--hotd);color:var(--hot)}
+.rcard.donecard .rc-n{background:transparent;color:var(--dim)}
+.rc-inf{flex:1;padding:10px 12px;min-width:0;cursor:pointer}
+.rc-nm{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.rc-ad{font-size:9px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.rc-nt{font-size:9px;color:var(--sun);line-height:1.4}
+.rc-r{display:flex;align-items:center;gap:7px;padding:0 10px;flex-shrink:0}
+
+/* STATUS BADGE */
+.sb{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.5px;padding:4px 10px;border-radius:8px;min-width:46px;text-align:center;border:1px solid}
+.sb-ok{background:var(--god);color:var(--go);border-color:var(--gob)}
+.sb-z{background:var(--ink3);color:var(--dim);border-color:var(--rim2)}
+.sb-kp{background:var(--hotd);color:var(--hot);border-color:var(--hotb)}
+.sb-gp{background:var(--sund);color:var(--sun);border-color:var(--sunb)}
+
+/* DONE RING */
+.dr{width:30px;height:30px;border-radius:50%;border:2px solid var(--rim2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .14s}
+.dr.on{background:var(--go);border-color:var(--go)}
+.dr.on::after{content:'✓';color:#000;font-size:14px;font-weight:900}
+
+/* ENTRY PANEL */
+.ep{border-top:1px solid var(--rim);padding:12px;display:none;flex-wrap:wrap;gap:8px;align-items:center}
+.ep.open{display:flex}
+.ctr{display:flex;align-items:center;gap:8px}
+.cb{width:50px;height:50px;border-radius:12px;border:1px solid var(--rim2);background:var(--ink);color:var(--txt);font-family:'Bebas Neue',sans-serif;font-size:32px;display:flex;align-items:center;justify-content:center;transition:all .11s}
+.cb:active{transform:scale(.83)}
+.cv{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--go);min-width:46px;text-align:center;line-height:1}
+.cv.z{color:var(--dim)}
+.sp{display:flex;gap:7px;margin-left:auto}
+.spb{height:50px;padding:0 16px;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;border:1px solid;transition:all .11s}
+.spb:active{transform:scale(.87)}
+.spgp{background:var(--sund);color:var(--sun);border-color:var(--sunb)}
+.spgp.lit{background:var(--sun);color:#000;border-color:var(--sun)}
+.spkp{background:var(--hotd);color:var(--hot);border-color:var(--hotb)}
+.spkp.lit{background:var(--hot);color:#fff;border-color:var(--hot)}
+.gpt-row{display:flex;flex-wrap:wrap;gap:5px;width:100%}
+.gpt{background:var(--sund);color:var(--sun);border:1px solid var(--sunb);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.gpt::after{content:'×';font-size:15px;opacity:.65}
+
+/* MAP ROW */
+.map-row{display:flex;gap:8px;margin-bottom:12px}
+
+/* SUMMARY */
+.sh{background:var(--god);border:1px solid var(--gob);border-radius:var(--rL);padding:22px;text-align:center;margin-bottom:14px}
+.sh-n{font-family:'Bebas Neue',sans-serif;font-size:80px;color:var(--go);line-height:1}
+.sh-l{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.wa-box{background:var(--ink2);border:1px solid var(--rim2);border-radius:var(--r);padding:16px;margin-bottom:12px;font-size:15px;line-height:2.1}
+.wn{color:var(--go);font-weight:700}.wg{color:var(--sun);font-weight:700}.wk{color:var(--hot);font-weight:700}.w0{color:var(--dim)}
+.det{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.drow{display:flex;align-items:center;padding:10px 14px;background:var(--ink2);border:1px solid var(--rim);border-radius:11px}
+.did{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--go);min-width:38px}
+.dnm{flex:1;font-size:10px;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dv{font-family:'Bebas Neue',sans-serif;font-size:22px}
+.dvgo{color:var(--go)}.dvkp{color:var(--hot)}.dvgp{color:var(--sun)}.dvz{color:var(--dim)}
+
+/* HISTORY */
+.hc{background:var(--ink2);border:1px solid var(--rim);border-radius:var(--rL);padding:14px;margin-bottom:8px}
+.hcd{font-size:9px;color:var(--dim);margin-bottom:7px;letter-spacing:1px}
+.hcs-row{display:flex;gap:18px;margin-bottom:8px}
+.hcs{font-size:11px;color:var(--txt)}
+.hcs b{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--go)}
+.hcwa{font-size:11px;color:var(--dim);line-height:1.8;font-family:'Azeret Mono',monospace}
+
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:60;align-items:flex-end;justify-content:center}
+.mbg.open{display:flex}
+.modal{background:var(--ink2);border:1px solid var(--rim2);border-radius:22px 22px 0 0;padding:20px 16px calc(var(--sb)+22px);width:100%;max-width:480px}
+.mo-id{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--go);margin-bottom:2px}
+.mo-nm{font-size:13px;font-weight:700;margin-bottom:2px}
+.mo-ad{font-size:10px;color:var(--dim);margin-bottom:12px}
+.mo-nt{font-size:12px;color:var(--sun);line-height:1.65;padding:13px;background:var(--sund);border-radius:10px;border:1px solid var(--sunb);margin-bottom:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--sb)+18px);left:50%;transform:translateX(-50%) translateY(80px);background:var(--go);color:#000;padding:11px 24px;border-radius:40px;font-size:12px;font-weight:700;z-index:100;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+.div{height:1px;background:var(--rim);margin:12px 0}
+.gap{height:9px}
+
+/* GPS DIRECT BUTTON ON CARD */
+.rc-gps-num{
+  font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--go);
+  width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--god);flex-shrink:0;line-height:1;border:none;cursor:pointer;
+  transition:all .12s;gap:2px;padding:8px 0;
+}
+.rc-gps-num:active{background:var(--go);color:#000;transform:scale(.94)}
+.rcard.donecard .rc-gps-num{background:transparent;color:var(--dim)}
+.rcard.kpcard .rc-gps-num{background:var(--hotd);color:var(--hot)}
+.gps-icon{font-size:16px;line-height:1;opacity:.7}
+.gps-full-btn{
+  width:100%;height:48px;border-radius:11px;
+  background:var(--god);color:var(--go);border:1px solid var(--gob);
+  font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .12s;
+}
+.gps-full-btn:active{background:var(--go);color:#000;transform:scale(.96)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">T2 <em>Luzern</em></div>
+  <div class="pills">
+    <div class="pill psun" id="b-sacs">0 Sacs</div>
+    <div class="pill pgo"  id="b-stops">0 Stops</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on"  onclick="nav('parse')">① Parse</button>
+  <button class="tab"     onclick="nav('tour')">② Tournée</button>
+  <button class="tab"     onclick="nav('sum')">③ Résumé</button>
+  <button class="tab"     onclick="nav('hist')">Histo</button>
+</div>
+
+<!-- ① PARSE -->
+<div class="sc on" id="sc-parse">
+  <div class="lbl">Coller le message WhatsApp</div>
+  <textarea class="paste" id="paste" rows="7"
+    placeholder="TOUR Position N&#10;T2 Luzern 7&#10;T2 Luzern 13&#10;T2 Luzern 17&#10;..."
+    oninput="onPaste()"></textarea>
+
+  <div class="pr-box" id="prbox">
+    <div class="pr-ttl">Stops détectés →</div>
+    <div class="pr-tags" id="prtags"></div>
+  </div>
+
+  <div class="brow" style="margin-top:12px">
+    <button class="btn bsur" style="flex:1" onclick="clearPaste()">Effacer</button>
+    <button class="btn bgo"  style="flex:2" onclick="confirmParse()">Confirmer →</button>
+  </div>
+
+  <div class="div"></div>
+  <div class="lbl">Ajouter un stop manuellement</div>
+  <div class="add-row">
+    <input class="ni" id="mnum" type="number" min="1" max="43" placeholder="N°" inputmode="numeric"/>
+    <button class="btn bsur" style="flex:1" onclick="addManual()">+ Stop</button>
+    <button class="btn bsur" onclick="toggleGrid()" id="grid-btn">Grille</button>
+  </div>
+  <div class="sgrid" id="sgrid" style="display:none"></div>
+
+  <div class="div"></div>
+  <button class="btn bhot bw" onclick="clearAll()">🗑 Réinitialiser tout</button>
+</div>
+
+<!-- ② TOURNÉE -->
+<div class="sc" id="sc-tour">
+  <div class="map-row">
+    <button class="btn bgo" style="flex:1" onclick="mapsAll()">🗺 GPS Tournée</button>
+    <button class="btn bsun" onclick="mapsNext()">Suivant →</button>
+  </div>
+  <div class="lbl" id="tour-lbl">Stops</div>
+  <div class="rcards" id="rcards"></div>
+</div>
+
+<!-- ③ RÉSUMÉ -->
+<div class="sc" id="sc-sum">
+  <div class="sh">
+    <div class="sh-n" id="sh-num">0</div>
+    <div class="sh-l">sacs récupérés</div>
+  </div>
+  <div class="lbl" id="sum-date"></div>
+  <div class="wa-box" id="wa-box"></div>
+  <button class="btn bgo bw" onclick="copyWA()" style="height:56px;font-size:14px;margin-bottom:8px">📋 Copier pour WhatsApp</button>
+  <div class="det" id="det"></div>
+  <div class="div"></div>
+  <button class="btn bhot bw" onclick="finishTour()">💾 Sauvegarder &amp; terminer</button>
+</div>
+
+<!-- HISTORIQUE -->
+<div class="sc" id="sc-hist">
+  <div class="lbl">Tournées précédentes</div>
+  <div id="hist-list"></div>
+  <div class="gap"></div>
+  <button class="btn bhot bw" onclick="clearHist()">🗑 Historique löschen</button>
+</div>
+
+</div>
+
+<!-- MODAL -->
+<div class="mbg" id="mbg">
+  <div class="modal">
+    <div class="mo-id" id="mo-id"></div>
+    <div class="mo-nm" id="mo-nm"></div>
+    <div class="mo-ad" id="mo-ad"></div>
+    <div class="mo-nt" id="mo-nt"></div>
+    <button class="btn bsun bw" id="mo-map" style="margin-bottom:8px">🗺 Google Maps öffnen</button>
+    <button class="btn bhot bw" id="mo-rm"  style="margin-bottom:8px">🗑 Stop entfernen</button>
+    <button class="btn bsur bw" onclick="closeMo()">Schliessen</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── DATEN ─────────────────────────────────── */
+const V=[
+  {id:1, c:"MühlO",    n:"VETtrust AG",                          a:"Zürichstr. 16, 4665 Oftringen",              note:"Milch-/Briefkasten"},
+  {id:2, c:"Mittellan",n:"Tierklinik Mittelland",                a:"Kieferstr. 2, 4665 Oftringen-Zofingen",       note:"Abends: Brief-/Milchkasten. Mittag: in Praxis"},
+  {id:3, c:"Grüna",    n:"Gross & Kleintierpraxis Grünau",       a:"Hauptstr. 75, 6260 Reiden",                   note:"Eingang – Medikamentenbox unter Milchkasten"},
+  {id:4, c:"Truvag",   n:"TRUVAG",                               a:"Leopoldstrasse 6, 6210 Sursee",               note:"Im Büro"},
+  {id:5, c:"BucherHi", n:"PascalBucher",                         a:"Bahnhofstrasse 13A, 6285 Hitzkirch",          note:"Fenstersims rechts hinter dem Haus (rote Fassade)"},
+  {id:6, c:"Eberl",    n:"KleintierpraxisEberli",                a:"Eichenweg 4, 6281 Hochdorf",                  note:"Brief-/Milchkasten"},
+  {id:7, c:"GerlisE",  n:"Kleintierpraxis Gerliswil AG",         a:"Haldenstr. 13, 6020 Emmenbrücke",            note:"Mit Schlüssel → Theke. Mittag: Wohnblock links, Praxis-Milchkasten"},
+  {id:8, c:"Bühlm",    n:"Tierarztpraxis Bühlmann Ruswil AG",    a:"Wolhuserstr. 12, 6017 Ruswil",                note:"Auf Mauer beim Briefkasten"},
+  {id:9, c:"IsenggW",  n:"Kleintierpraxis Isenegger GmbH",       a:"Hackenrüti 3, 6110 Wolhusen",                note:"Briefkasten links von Praxiswand (links Glasscheibe)"},
+  {id:10,c:"Wyden",    n:"Kleintierpraxis Wydenhof",             a:"Alpenstr. 3, 6010 Kriens",                    note:"Milchkasten an Hausmauer links"},
+  {id:11,c:"LeuHorw",  n:"Kleintierpraxis Horw",                 a:"Gemeindehausplatz 12, 6048 Horw",             note:"Milchkasten – gilt Mittags + Abend"},
+  {id:12,c:"Oberg",    n:"Tierklinik Obergrund AG",              a:"Arsenalstrasse 10, 6005 Luzern",              note:"Box vor Eingangstür"},
+  {id:13,c:"Löwen",    n:"Kleintierpraxis Löwenplatz",           a:"Zürichstr. 14, 6004 Luzern",                 note:"Passage links Waffenladen, 2. Tür Code 1997 – Proben auf Lavabo rechts"},
+  {id:14,c:"Schachen", n:"KleintierpraxisSchachenweid AG",       a:"Schachenweidstr. 46, 6030 Ebikon",            note:"Brief-/Milchkasten"},
+  {id:15,c:"Stade",    n:"H.Stadelmann",                         a:"Ringstr. 6, 6343 Rotkreuz",                   note:"In Türchen, rechts vor Haustüre"},
+  {id:16,c:"EvidenH",  n:"IVC Evidensia (LaborAmZugersee)",      a:"Rothusstr. 2, 6331 Hünenberg",               note:"Briefkästen hinter dem Haus"},
+  {id:17,c:"EvidHue",  n:"IVC Evidensia (ENNETSeeKLINIK)",       a:"Rothusstr. 2, 6331 Hünenberg",               note:"Brief-/Milchkasten"},
+  {id:18,c:"Hafli",    n:"UrsHäfliger",                          a:"Bahnhofstr. 7, 5643 Sins",                    note:"In Truhe beim Gartensitzplatz"},
+  {id:19,c:"VilliS",   n:"Grosstierpraxis Villiger GmbH",        a:"Bodenfeldstr. 10, 5643 Sins",                 note:"Rampe → Parkplatz: Fensterbank-Kiste «Kurier»"},
+  {id:20,c:"Riner",    n:"KathrinRiner",                         a:"Dorfstr. 29, 8914 Aeugst am Albis",           note:"Milchfach Praxisbriefkasten – linke Hinterseite, überdachte Parkplätze"},
+  {id:21,c:"Wetli",    n:"Urs Wetli",                            a:"Leigrüppenstr. 37, 8932 Mettmenstetten",     note:"Im Hauseingang"},
+  {id:22,c:"Exoten",   n:"Exotenpraxis",                         a:"Sinserstrasse 120, 6330 Cham",                note:"Im Briefkasten"},
+  {id:23,c:"Myvet",    n:"KleintierpraxismyVets GmbH",           a:"Knonauerstr. 54, 6330 Cham",                 note:"Briefkasten Haupteingang"},
+  {id:24,c:"Spill",    n:"Kleintierpraxis Spillmann",            a:"Luzernerstr. 30, 6330 Cham",                 note:"Briefkasten vor dem Eingang"},
+  {id:25,c:"zRvets",   n:"zR-vets AG",                           a:"Marktgasse 12, 6340 Baar",                    note:"Abends: Milchkasten. Mittags ≥11:30, vor 12h: anrufen"},
+  {id:26,c:"SteiB",    n:"Luzia Steiner",                        a:"Bahnmatt 27, 6340 Baar",                      note:"Brief-/Milchkasten"},
+  {id:27,c:"BofeldB",  n:"BofeldVET AG",                         a:"Bofeld 2, 6340 Baar",                         note:"Brief-/Milchkasten"},
+  {id:28,c:"Göbli",    n:"VETtrust AG (Zug)",                    a:"Industriestr. 49, 6300 Zug",                  note:"Briefkasten hinten am Gebäude"},
+  {id:29,c:"ZugerbN",  n:"Tierarztpraxis Zugerberg AG",          a:"Zugerstr. 193, 6314 Neuägeri",               note:"Milchkasten ganz rechts unten Hausende"},
+  {id:30,c:"FennU",    n:"Dunja Fenner",                         a:"Rainstr. 37, 6314 Unterägeri",               note:"Milchkasten rechts beim Eingang"},
+  {id:31,c:"Rohde",    n:"MartinRohdewald",                      a:"Leimatt 10, 6317 Oberwil b. Zug",            note:"Brief-/Milchkasten"},
+  {id:32,c:"Abbühl",   n:"UrsAbbühl",                            a:"Gotthardstr. 39, 6414 Oberarth",              note:"Silbr. Milchkasten, blauer Diavet-Kleber rechts Praxiseingang"},
+  {id:33,c:"ParkVet",  n:"TierarztpraxisParkVets",               a:"Bahnhofstrasse 13A, 6410 Goldau",             note:"Milchkasten Parkplatz / Styroporbox vor Tür"},
+  {id:34,c:"KristoE",  n:"Tajana Kristovic",                     a:"Schmiedenstr. 27, 8840 Einsiedeln",           note:"Brief-/Milchkasten"},
+  {id:35,c:"StaubE",   n:"KleintierpraxisStaub",                 a:"Nordstrasse 6, 8840 Einsiedeln",              note:"Milchkasten rechts neben der Praxis"},
+  {id:36,c:"Etzel",    n:"SwissVets – Nutztierpraxis am Etzel", a:"Kobibodenstr. 57, 8840 Einsiedeln",          note:"Geradeaus → rechts Abholrampe: grüne Box «SwissVets LABOR»"},
+  {id:37,c:"Marigin",  n:"Marigin – Zentrum für Tiermedizin",   a:"Firststr. 31, 8835 Feusisberg",              note:"Milchkasten links Eingang, innerhalb Glastüre"},
+  {id:38,c:"vet4La",   n:"Vet4pet GmbH",                         a:"Bahnhofplatz 8, 8853 Lachen SZ",             note:"Brief-/Milchkasten"},
+  {id:39,c:"Rundum",   n:"KleintierpraxisrundumXund",            a:"Churerstr. 16, 8852 Altendorf",              note:"Brief-/Milchkasten"},
+  {id:40,c:"Obersee",  n:"Kleintierpraxis Obersee GmbH",         a:"Zürcherstr. 29, 8852 Altendorf",             note:"Brief-/Milchkasten beim Hauseingang"},
+  {id:41,c:"MariPf",   n:"Marigin AG Tierarztpraxis Pfäffikon",  a:"Talstrasse 35, 8808 Pfäffikon SZ",           note:"Im Briefkasten"},
+  {id:42,c:"insektFr", n:"Insekterei GmbH",                      a:"Schwerzistrasse 34, 8807 Freienbach",        note:"Briefkasten beim alten Haupteingang"},
+  {id:43,c:"RuschW",   n:"MartinaRusch",                         a:"Korporationsweg 10, 8832 Wollerau",          note:"Brief-/Milchkasten"},
+];
+const VM=Object.fromEntries(V.map(v=>[v.id,v]));
+
+/* ─── STATE ──────────────────────────────────── */
+let sel=new Set(), dat={}, done=new Set(), gridOpen=false;
+function D(id){if(!dat[id])dat[id]={bags:0,gps:0,kp:false};return dat[id];}
+
+/* ─── INIT ───────────────────────────────────── */
+function init(){
+  V.forEach(v=>{
+    const b=document.createElement('button');
+    b.className='sg';b.id=`sg-${v.id}`;b.textContent=v.id;
+    b.onclick=()=>toggleSel(v.id);
+    document.getElementById('sgrid').appendChild(b);
+  });
+  loadSess();renderHist();
+}
+
+/* ─── NAV ────────────────────────────────────── */
+function nav(n){
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(`sc-${n}`).classList.add('on');
+  ['parse','tour','sum','hist'].forEach((x,i)=>{if(x===n)document.querySelectorAll('.tab')[i].classList.add('on');});
+  if(n==='tour')renderTour();
+  if(n==='sum') renderSum();
+  if(n==='hist')renderHist();
+}
+
+/* ─── PARSE ──────────────────────────────────── */
+function onPaste(){
+  const txt=document.getElementById('paste').value;
+  const ids=parseMsg(txt);
+  const box=document.getElementById('prbox');
+  const tags=document.getElementById('prtags');
+  if(!ids.length){box.classList.remove('show');return;}
+  box.classList.add('show');
+  tags.innerHTML=ids.map(id=>`<span class="pr-tag">${id}</span>`).join('');
+}
+
+function parseMsg(txt){
+  // Stratégie 1 : "T2 Luzern 7" ou "Luzern 7"
+  const found=new Set();
+  const r1=/(?:luzern)\s+(\d+)/gi;
+  let m;
+  while((m=r1.exec(txt))!==null){
+    const n=parseInt(m[1]);
+    if(n>=1&&n<=43)found.add(n);
+  }
+  // Stratégie 2 : lignes contenant uniquement un numéro
+  if(!found.size){
+    txt.split(/\n/).forEach(l=>{
+      const t=l.trim();const n=parseInt(t);
+      if(!isNaN(n)&&n>=1&&n<=43&&String(n)===t)found.add(n);
+    });
+  }
+  // Stratégie 3 : n'importe quelle occurrence de 1-43 en fin de mot/ligne
+  if(!found.size){
+    const r3=/\b([1-9]|[1-3]\d|4[0-3])\b/g;
+    while((m=r3.exec(txt))!==null){
+      const n=parseInt(m[1]);
+      if(n>=1&&n<=43)found.add(n);
+    }
+  }
+  return [...found].sort((a,b)=>a-b);
+}
+
+function confirmParse(){
+  const txt=document.getElementById('paste').value.trim();
+  if(!txt){toast('Colle d\'abord un message');return;}
+  const ids=parseMsg(txt);
+  if(!ids.length){toast('Aucun stop détecté');return;}
+  ids.forEach(id=>sel.add(id));
+  syncGrid();badge();saveSess();
+  toast(`${ids.length} stops ajoutés ✓`);
+  document.getElementById('paste').value='';
+  document.getElementById('prbox').classList.remove('show');
+  nav('tour');
+}
+
+function clearPaste(){
+  document.getElementById('paste').value='';
+  document.getElementById('prbox').classList.remove('show');
+}
+
+/* ─── SELECTION ──────────────────────────────── */
+function toggleSel(id){
+  sel.has(id)?sel.delete(id):sel.add(id);
+  document.getElementById(`sg-${id}`).classList.toggle('on',sel.has(id));
+  badge();saveSess();
+}
+function syncGrid(){
+  V.forEach(v=>document.getElementById(`sg-${v.id}`).classList.toggle('on',sel.has(v.id)));
+}
+function addManual(){
+  const el=document.getElementById('mnum');
+  const n=parseInt(el.value);
+  if(!n||n<1||n>43){toast('Numéro 1–43 requis');return;}
+  sel.add(n);syncGrid();badge();saveSess();el.value='';
+  toast(`Stop #${n} ajouté`);
+}
+function toggleGrid(){
+  gridOpen=!gridOpen;
+  document.getElementById('sgrid').style.display=gridOpen?'grid':'none';
+  document.getElementById('grid-btn').style.background=gridOpen?'var(--god)':'';
+  document.getElementById('grid-btn').style.color=gridOpen?'var(--go)':'';
+}
+function clearAll(){
+  if(!confirm('Tout réinitialiser?'))return;
+  sel.clear();dat={};done.clear();
+  syncGrid();badge();saveSess();
+  toast('Réinitialisé');
+}
+function badge(){
+  document.getElementById('b-stops').textContent=`${sel.size} Stops`;
+  let t=0;sel.forEach(id=>{const d=dat[id];if(d&&!d.kp)t+=(d.bags||0)+(d.gps||0);});
+  document.getElementById('b-sacs').textContent=`${t} Sacs`;
+}
+function sorted(){return[...sel].sort((a,b)=>a-b).map(id=>VM[id]).filter(Boolean);}
+
+/* ─── RENDER TOUR ────────────────────────────── */
+function renderTour(){
+  const stops=sorted();
+  document.getElementById('tour-lbl').textContent=`${stops.length} stop(s)`;
+  const rc=document.getElementById('rcards');
+  if(!stops.length){rc.innerHTML='<div class="empty">Aucun stop.<br>← Retour à Parse.</div>';return;}
+  rc.innerHTML='';
+  const fp=stops.findIndex(s=>!done.has(s.id));
+  stops.forEach((v,i)=>{
+    const isDone=done.has(v.id);
+    const isCur=i===fp;
+    const d=D(v.id);
+    let cc='rcard';
+    if(isDone)cc+=' donecard';
+    else if(isCur)cc+=' cur';
+    if(!isDone&&d.kp)cc+=' kpcard';
+    else if(!isDone&&(d.gps||0)>0)cc+=' gpcard';
+
+    // Badge
+    let sb='';
+    if(d.kp)sb=`<div class="sb sb-kp">KP</div>`;
+    else{
+      const tot=(d.bags||0)+(d.gps||0);
+      if(tot===0)sb=`<div class="sb sb-z">—</div>`;
+      else if(d.bags>0&&d.gps>0)sb=`<div class="sb sb-gp">${d.bags}+${d.gps}GP</div>`;
+      else if(d.gps>0)sb=`<div class="sb sb-gp">${d.gps}GP</div>`;
+      else sb=`<div class="sb sb-ok">${d.bags}</div>`;
+    }
+
+    const np=v.note?`<div class="rc-nt">💡${v.note.length>55?v.note.slice(0,55)+'…':v.note}</div>`:'';
+    let gpts='';
+    for(let g=0;g<(d.gps||0);g++)gpts+=`<span class="gpt" onclick="rmGP(${v.id},event)">GP${(d.gps||0)>1?` ${g+1}`:''}</span>`;
+
+    const card=document.createElement('div');
+    card.className=cc;card.id=`rc-${v.id}`;
+    card.innerHTML=`
+      <div class="rc-top">
+        <button class="rc-gps-num" onclick="gmStop(${v.id})">
+          ${v.id}
+          <span class="gps-icon">🗺</span>
+        </button>
+        <div class="rc-inf" onclick="openMo(${v.id})">
+          <div class="rc-nm">${v.n}</div>
+          <div class="rc-ad">${v.a}</div>
+          ${np}
+        </div>
+        <div class="rc-r">
+          ${sb}
+          <div class="dr${isDone?' on':''}" onclick="toggleDone(${v.id})"></div>
+        </div>
+      </div>
+      <div class="ep${isDone?'':' open'}" id="ep-${v.id}">
+        <button class="gps-full-btn" onclick="gmStop(${v.id})">🗺 Naviguer vers ce stop</button>
+        <div class="ctr">
+          <button class="cb" onclick="chgBag(${v.id},-1)">−</button>
+          <div class="cv${(d.bags||0)===0?' z':''}" id="bv-${v.id}">${d.bags||0}</div>
+          <button class="cb" onclick="chgBag(${v.id},1)">+</button>
+        </div>
+        <div class="sp">
+          <button class="spb spgp${(d.gps||0)>0?' lit':''}" onclick="addGP(${v.id})">+GP</button>
+          <button class="spb spkp${d.kp?' lit':''}" onclick="togKP(${v.id})">KP</button>
+        </div>
+        ${gpts?`<div class="gpt-row">${gpts}</div>`:''}
+      </div>
+    `;
+    rc.appendChild(card);
+  });
+}
+
+function chgBag(id,delta){const d=D(id);if(d.kp)return;d.bags=Math.max(0,(d.bags||0)+delta);saveSess();badge();renderTour();}
+function addGP(id){const d=D(id);if(d.kp)return;d.gps=(d.gps||0)+1;saveSess();badge();renderTour();}
+function rmGP(id,e){e.stopPropagation();const d=D(id);if(d.gps>0)d.gps--;saveSess();badge();renderTour();}
+function togKP(id){const d=D(id);d.kp=!d.kp;if(d.kp){d.bags=0;d.gps=0;}saveSess();badge();renderTour();}
+function toggleDone(id){done.has(id)?done.delete(id):done.add(id);saveSess();badge();renderTour();}
+
+/* ─── GPS ────────────────────────────────────── */
+function ga(a){return a.replace(/ü/g,'ue').replace(/Ü/g,'Ue').replace(/ä/g,'ae').replace(/Ä/g,'Ae').replace(/ö/g,'oe').replace(/Ö/g,'Oe').replace(/[–—]/g,'-');}
+function gm(addr){window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ga(addr))}`);}
+function gmStop(id){const v=VM[id];if(!v)return;gm(v.a);toast(`🗺 Stop #${id} — ouverture GPS…`);}
+function mapsAll(){
+  const stops=sorted().filter(v=>!done.has(v.id));
+  if(!stops.length){toast('Tous les stops sont faits!');return;}
+  if(stops.length===1){gm(stops[0].a);return;}
+  const dest=encodeURIComponent(ga(stops[stops.length-1].a));
+  const wp=stops.slice(0,-1).map(v=>encodeURIComponent(ga(v.a))).join('|');
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}&waypoints=${wp}&travelmode=driving`);
+}
+function mapsNext(){const nxt=sorted().find(v=>!done.has(v.id));if(!nxt){toast('Tous faits!');return;}gm(nxt.a);}
+
+/* ─── MODAL ──────────────────────────────────── */
+function openMo(id){
+  const v=VM[id];
+  document.getElementById('mo-id').textContent=`#${v.id}`;
+  document.getElementById('mo-nm').textContent=v.n;
+  document.getElementById('mo-ad').textContent=v.a;
+  document.getElementById('mo-nt').textContent=v.note||'Keine Notiz';
+  document.getElementById('mo-map').onclick=()=>gm(v.a);
+  document.getElementById('mo-rm').onclick=()=>{
+    sel.delete(id);delete dat[id];done.delete(id);
+    syncGrid();badge();saveSess();closeMo();renderTour();
+    toast(`Stop #${id} entfernt`);
+  };
+  document.getElementById('mbg').classList.add('open');
+}
+function closeMo(){document.getElementById('mbg').classList.remove('open');}
+document.getElementById('mbg').addEventListener('click',function(e){if(e.target===this)closeMo();});
+
+/* ─── WHATSAPP FORMAT ────────────────────────── */
+function waLine(v){
+  const d=dat[v.id]||{bags:0,gps:0,kp:false};
+  if(d.kp)return`${v.id}/kp`;
+  const b=d.bags||0,g=d.gps||0;
+  // Bonus : stop sans saisie → kp automatique
+  if(b===0&&g===0)return`${v.id}/kp`;
+  const p=[];
+  if(g>0)p.push(`${g}gp`);
+  if(b>0)p.push(`${b}`);
+  return`${v.id}/${p.join('/')}`;
+}
+function waText(){return sorted().map(v=>waLine(v)).join('\n');}
+
+/* ─── SUMMARY ────────────────────────────────── */
+function renderSum(){
+  const stops=sorted();
+  let total=0;
+  stops.forEach(v=>{const d=dat[v.id]||{};if(!d.kp)total+=(d.bags||0)+(d.gps||0);});
+  document.getElementById('sh-num').textContent=total;
+  const now=new Date();
+  document.getElementById('sum-date').textContent=
+    now.toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // WA preview
+  const wb=document.getElementById('wa-box');wb.innerHTML='';
+  if(!stops.length){wb.textContent='(aucun stop)';return;}
+  stops.forEach(v=>{
+    const d=dat[v.id]||{};
+    const line=waLine(v);
+    const div=document.createElement('div');
+    const isKP=d.kp||((!d.bags||d.bags===0)&&(!d.gps||d.gps===0));
+    div.className=isKP?'wk':((d.gps||0)>0?'wg':'wn');
+    div.textContent=line;
+    wb.appendChild(div);
+  });
+
+  // Detail
+  const det=document.getElementById('det');det.innerHTML='';
+  stops.forEach(v=>{
+    const d=dat[v.id]||{bags:0,gps:0,kp:false};
+    const isKP=d.kp||((!d.bags||d.bags===0)&&(!d.gps||d.gps===0));
+    let vt,vc;
+    if(isKP){vt='KP';vc='dvkp';}
+    else if((d.gps||0)>0&&d.bags===0){vt=`${d.gps}GP`;vc='dvgp';}
+    else if((d.gps||0)>0){vt=`${d.bags}+${d.gps}GP`;vc='dvgp';}
+    else{vt=d.bags;vc='dvgo';}
+    const row=document.createElement('div');
+    row.className='drow';
+    row.innerHTML=`<div class="did">${v.id}</div><div class="dnm">${v.n}</div><div class="dv ${vc}">${vt}</div>`;
+    det.appendChild(row);
+  });
+}
+
+function copyWA(){
+  const txt=waText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast('✓ Copié pour WhatsApp!')).catch(fb);
+  }else fb();
+  function fb(){
+    const ta=document.createElement('textarea');
+    ta.value=txt;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{document.execCommand('copy');toast('✓ Copié!');}catch(e){toast('Copie manuelle requise');}
+    document.body.removeChild(ta);
+  }
+}
+
+/* ─── FINISH ─────────────────────────────────── */
+function finishTour(){
+  const stops=sorted();
+  if(!stops.length){toast('Rien à sauvegarder');return;}
+  let total=0;
+  stops.forEach(v=>{const d=dat[v.id]||{};if(!d.kp)total+=(d.bags||0)+(d.gps||0);});
+  const rec={date:new Date().toISOString(),wa:waText(),stops:stops.map(v=>({id:v.id,...(dat[v.id]||{})})),total};
+  const h=JSON.parse(localStorage.getItem('t2h')||'[]');
+  h.unshift(rec);localStorage.setItem('t2h',JSON.stringify(h.slice(0,30)));
+  clearAll();nav('hist');toast('Tournée sauvegardée ✓');
+}
+
+function renderHist(){
+  const hist=JSON.parse(localStorage.getItem('t2h')||'[]');
+  const el=document.getElementById('hist-list');
+  if(!hist.length){el.innerHTML='<div class="empty">Keine gespeicherten Tournées.</div>';return;}
+  el.innerHTML='';
+  hist.forEach(h=>{
+    const d=new Date(h.date);
+    const ds=d.toLocaleDateString('fr-CH',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
+             +' '+d.toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'});
+    const c=document.createElement('div');c.className='hc';
+    c.innerHTML=`
+      <div class="hcd">${ds}</div>
+      <div class="hcs-row">
+        <div class="hcs"><b>${h.total}</b> Sacs</div>
+        <div class="hcs"><b>${h.stops.length}</b> Stops</div>
+      </div>
+      <div class="hcwa">${(h.wa||'').replace(/\n/g,'<br>')}</div>
+    `;
+    el.appendChild(c);
+  });
+}
+
+function clearHist(){
+  if(!confirm('Verlauf löschen?'))return;
+  localStorage.removeItem('t2h');renderHist();
+}
+
+/* ─── PERSIST ────────────────────────────────── */
+function saveSess(){localStorage.setItem('t2s',JSON.stringify({sel:[...sel],dat,done:[...done]}));}
+function loadSess(){
+  try{
+    const s=JSON.parse(localStorage.getItem('t2s')||'{}');
+    if(s.sel)sel=new Set(s.sel);
+    if(s.dat)dat=s.dat;
+    if(s.done)done=new Set(s.done);
+    syncGrid();badge();
+  }catch(e){}
+}
+
+/* ─── TOAST ──────────────────────────────────── */
+let _t;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_t);_t=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+init();
+</script>
+</body>
+</html>
